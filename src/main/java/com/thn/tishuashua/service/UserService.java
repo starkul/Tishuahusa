@@ -6,15 +6,13 @@ import com.thn.tishuashua.model.dto.user.UserQueryRequest;
 import com.thn.tishuashua.model.entity.User;
 import com.thn.tishuashua.model.vo.LoginUserVO;
 import com.thn.tishuashua.model.vo.UserVO;
+
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 
 /**
  * 用户服务
- *
- * @author <a href="https://github.com/lithn">田浩楠</a>
- * @from <a href="https://thn.icu">编程导航知识星球</a>
  */
 public interface UserService extends IService<User> {
 
@@ -118,4 +116,19 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    /**
+     * 添加用户签到记录
+     * @param userId
+     * @return 当前用户是否已签到成功
+     */
+    boolean addUserSignIn (long userId);
+
+    /**
+     * 获取用户某个年份的签到记录
+     *
+     * @param userId
+     * @param year
+     * @return 签到记录映射
+     */
+    List<Integer> getUserSignInRecord(long userId, Integer year);
 }

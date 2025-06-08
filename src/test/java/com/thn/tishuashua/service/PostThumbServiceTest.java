@@ -9,9 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * 帖子点赞服务测试
- *
- * @author <a href="https://github.com/lithn">田浩楠</a>
- * @from <a href="https://thn.icu">编程导航知识星球</a>
  */
 @SpringBootTest
 class PostThumbServiceTest {

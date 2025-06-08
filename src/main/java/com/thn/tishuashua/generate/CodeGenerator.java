@@ -14,9 +14,6 @@ import java.io.Writer;
 
 /**
  * 代码生成器
- *
- * @author <a href="https://github.com/lithn">田浩楠</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
  */
 public class CodeGenerator {
 
@@ -30,9 +27,9 @@ public class CodeGenerator {
     public static void main(String[] args) throws TemplateException, IOException {
         // 指定生成参数
         String packageName = "com.thn.tishuashua";
-        String dataName = "用户评论";
-        String dataKey = "userComment";
-        String upperDataKey = "UserComment";
+        String dataName = "题库题目关联";
+        String dataKey = "questionBankQuestion";
+        String upperDataKey = "QuestionBankQuestion";
 
         // 封装生成参数
         Map<String, Object> dataModel = new HashMap<>();

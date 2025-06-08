@@ -7,9 +7,6 @@ import java.util.List;
 
 /**
  * 更新${dataName}请求
- *
- * @author <a href="https://github.com/lithn">田浩楠</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
  */
 @Data
 public class ${upperDataKey}UpdateRequest implements Serializable {

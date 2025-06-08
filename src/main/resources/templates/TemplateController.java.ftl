@@ -27,9 +27,6 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * ${dataName}接口
- *
- * @author <a href="https://github.com/lithn">田浩楠</a>
- * @from <a href="https://www.code-nav.cn">编程导航学习圈</a>
  */
 @RestController
 @RequestMapping("/${dataKey}")

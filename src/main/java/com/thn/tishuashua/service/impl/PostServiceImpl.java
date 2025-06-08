@@ -48,9 +48,6 @@ import org.springframework.stereotype.Service;
 
 /**
  * 帖子服务实现
- *
- * @author <a href="https://github.com/lithn">田浩楠</a>
- * @from <a href="https://thn.icu">编程导航知识星球</a>
  */
 @Service
 @Slf4j

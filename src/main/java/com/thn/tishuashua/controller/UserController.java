@@ -21,7 +21,9 @@ import com.thn.tishuashua.model.vo.LoginUserVO;
 import com.thn.tishuashua.model.vo.UserVO;
 import com.thn.tishuashua.service.UserService;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,9 +46,6 @@ import static com.thn.tishuashua.service.impl.UserServiceImpl.SALT;
 
 /**
  * 用户接口
- *
- * @author <a href="https://github.com/lithn">田浩楠</a>
- * @from <a href="https://thn.icu">编程导航知识星球</a>
  */
 @RestController
 @RequestMapping("/user")
@@ -316,5 +315,32 @@ public class UserController {
         boolean result = userService.updateById(user);
         ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(true);
+    }
+
+    /**
+     * 添加用户签到记录
+     * @param request
+     * @return  当前是否已签到成功
+     */
+    @PostMapping("/add/sign_in")
+    public BaseResponse<Boolean> addUserSignIn(HttpServletRequest request) {
+        //必须登录才能签到成功
+        User loginUser = userService.getLoginUser(request);
+        boolean result = userService.addUserSignIn(loginUser.getId());
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 获取某年的签到记录
+     * @param year
+     * @param request
+     * @return  当年记录的Map
+     */
+    @GetMapping("/get/sign in")
+    public BaseResponse<List<Integer>> getUsersignInRecord(Integer year, HttpServletRequest request) {
+        //必须要登录才能获取
+        User loginUser = userService.getLoginUser(request);
+        List<Integer> userSignInRecord = userService.getUserSignInRecord(loginUser.getId(), year);
+        return ResultUtils.success(userSignInRecord);
     }
 }
