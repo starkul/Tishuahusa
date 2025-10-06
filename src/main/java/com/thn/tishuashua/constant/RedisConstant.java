@@ -8,6 +8,7 @@ public interface RedisConstant {
      *  用户签到记录的Redis Key  前缀
      */
     String USER_SIGN_IN_REDIS_KEY_PREFIX =  "user:signins";
+
     /**
      *  获取用户签到记录的Redis Key
      * @param year 年份
@@ -16,5 +17,19 @@ public interface RedisConstant {
      */
     static String getUserSignInRedisKey(int year, long userId){
          return String.format( "%s:%s:%s", USER_SIGN_IN_REDIS_KEY_PREFIX, year, userId);
-    }                          
+    }
+
+    /**
+     * 检测爬虫的Redis key前缀
+     */
+    String USER_CRAWLER_DETECT_REDIS_KEY_PREFIX = "user:access";
+
+    /**
+     * 获取检测用户爬虫的Redis key
+     * @param loginUserId 登录用户ID
+     * @return 拼接好的Redis Key
+     */
+    static String getUserCrawlerDetectRedisKey(long loginUserId){
+        return String.format( "%s:%s", USER_CRAWLER_DETECT_REDIS_KEY_PREFIX, loginUserId);
+    }
 }

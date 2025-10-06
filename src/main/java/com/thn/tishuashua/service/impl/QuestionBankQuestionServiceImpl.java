@@ -259,7 +259,6 @@ public class QuestionBankQuestionServiceImpl extends ServiceImpl<QuestionBankQue
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
         // 关闭线程池
         customExecutor.shutdown();
-
     }
 
     /**

@@ -25,6 +25,16 @@ public class SentinelTest {
                 System.out.println("blocked!");
             }
         }
+//        for (int i = 0; i < 100; i++) {
+//            // 1.5.0 版本开始可以直接利用 try-with-resources 特性
+//            try (Entry entry = SphU.entry("HelloWorld")) {
+//                // 被保护的逻辑
+//                System.out.println("hello world");
+//            } catch (BlockException ex) {
+//                // 处理被流控的逻辑
+//                System.out.println("blocked!");
+//            }
+//        }
     }
     private static void initFlowRules(){
         List<FlowRule> rules = new ArrayList<>();

@@ -1,5 +1,7 @@
 package com.thn.tishuashua.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.EntryType;
@@ -16,6 +18,7 @@ import com.thn.tishuashua.common.ResultUtils;
 import com.thn.tishuashua.constant.UserConstant;
 import com.thn.tishuashua.exception.BusinessException;
 import com.thn.tishuashua.exception.ThrowUtils;
+import com.thn.tishuashua.manager.CounterManager;
 import com.thn.tishuashua.model.dto.question.QuestionAddRequest;
 import com.thn.tishuashua.model.dto.question.QuestionEditRequest;
 import com.thn.tishuashua.model.dto.question.QuestionQueryRequest;
@@ -23,6 +26,7 @@ import com.thn.tishuashua.model.dto.question.QuestionUpdateRequest;
 import com.thn.tishuashua.model.entity.Question;
 import com.thn.tishuashua.model.entity.User;
 import com.thn.tishuashua.model.vo.QuestionVO;
+import com.thn.tishuashua.service.EmailService;
 import com.thn.tishuashua.service.QuestionBankQuestionService;
 import com.thn.tishuashua.service.QuestionService;
 import com.thn.tishuashua.service.UserService;
@@ -34,6 +38,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+import static com.thn.tishuashua.constant.RedisConstant.getUserCrawlerDetectRedisKey;
+import static com.thn.tishuashua.constant.SentinelConstant.Sentinel_List_Question_VO_By_Page;
 
 /**
  * 题目接口
@@ -52,6 +60,12 @@ public class QuestionController {
     @Resource
     private QuestionBankQuestionService questionBankQuestionService;
     // region 增删改查
+
+    @Resource
+    private CounterManager counterManager;
+
+    @Resource
+    private EmailService emailService;
 
     /**
      * 创建题目
@@ -115,7 +129,7 @@ public class QuestionController {
      * @return
      */
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @SaCheckRole(UserConstant.ADMIN_ROLE)
     public BaseResponse<Boolean> updateQuestion(@RequestBody QuestionUpdateRequest questionUpdateRequest) {
         if (questionUpdateRequest == null || questionUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -144,6 +158,9 @@ public class QuestionController {
     @GetMapping("/get/vo")
     public BaseResponse<QuestionVO> getQuestionVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        // 检测和处置爬虫
+        User loginUser = userService.getLoginUser(request);
+        crawlerDetect(loginUser.getId());
         // 查询数据库
         Question question = questionService.getById(id);
         ThrowUtils.throwIf(question == null, ErrorCode.NOT_FOUND_ERROR);
@@ -152,13 +169,44 @@ public class QuestionController {
     }
 
     /**
+     * 检测爬虫
+     * @param loginUserId
+     */
+    private void crawlerDetect(long loginUserId) {
+        // 调用多少次时告警
+        final int WARN_COUNT = 10;
+        // 超过多少次封号
+        final int BAN_COUNT = 20;
+        // 拼接访问 key
+        String key = getUserCrawlerDetectRedisKey(loginUserId);
+        // 一分钟内访问次数，180 秒过期
+        long count = counterManager.incrAndGetCounter(key, 1, TimeUnit.MINUTES, 180);
+        // 是否封号
+        if (count > BAN_COUNT) {
+            // 踢下线
+            StpUtil.kickout(loginUserId);
+            // 封号
+            User updateUser = new User();
+            updateUser.setId(loginUserId);
+            updateUser.setUserRole("ban");
+            userService.updateById(updateUser);
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "访问太频繁，已被封号");
+        }
+        // 是否告警
+        if (count == WARN_COUNT) {
+            // 使用Hutool发送告警邮件
+            //emailService.sendWarningEmail(loginUserId, count);
+            throw new BusinessException(110, "警告访问太频繁");
+        }
+    }
+    /**
      * 分页获取题目列表（仅管理员可用）
      *
      * @param questionQueryRequest
      * @return
      */
     @PostMapping("/list/page")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @SaCheckRole(UserConstant.ADMIN_ROLE)
     public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest) {
         ThrowUtils.throwIf(questionQueryRequest == null, ErrorCode.PARAMS_ERROR);
         Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);
@@ -183,7 +231,7 @@ public class QuestionController {
         String remoteAddr = request.getRemoteAddr();
         Entry entry = null;
         try {
-            entry = SphU.entry("listQuestionVOByPage", EntryType.IN, 1, remoteAddr);
+            entry = SphU.entry(Sentinel_List_Question_VO_By_Page, EntryType.IN, 1, remoteAddr);
             // 被保护的业务逻辑
             // 查询数据库
             Page<Question> questionPage = questionService.listQuestionByPage(questionQueryRequest);

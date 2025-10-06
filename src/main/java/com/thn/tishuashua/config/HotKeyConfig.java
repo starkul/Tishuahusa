@@ -21,7 +21,7 @@ public class HotKeyConfig {
     /**
      * 应用名称
      */
-    private String appName = "app";
+    private String appName = "tishuashua";
 
     /**
      * 本地缓存最大数量
@@ -29,7 +29,7 @@ public class HotKeyConfig {
     private int caffeineSize = 10000;
 
     /**
-     * 批量推送 key 的间隔时间
+     * 批量推送 key 的间隔时间为1s
      */
     private long pushPeriod = 1000L;
 
@@ -40,7 +40,7 @@ public class HotKeyConfig {
     public void initHotkey() {
         ClientStarter.Builder builder = new ClientStarter.Builder();
         ClientStarter starter = builder.setAppName(appName)
-                .setCaffeineSize(caffeineSize)
+                .setCaffeineSize(caffeineSize)  //默认设置为128
                 .setPushPeriod(pushPeriod)
                 .setEtcdServer(etcdServer)
                 .build();
